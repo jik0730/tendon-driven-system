@@ -36,12 +36,12 @@ class RealFriction(object):
     The friction function is similar to the real situation.
     """
 
-    def __init__(self, a0, a1, a2, v0, A, const):
-        self.a0 = a0
-        self.a1 = a1
-        self.a2 = a2
-        self.v0 = v0
-        self.A = A
+    def __init__(self, const):
+        self.a0 = const['a0']
+        self.a1 = const['a1']
+        self.a2 = const['a2']
+        self.v0 = const['v0']
+        self.A = const['A']
         self.L = const['L']
         self.b = const['b']
         self.del_t = const['del_t']
@@ -59,6 +59,9 @@ class RealFriction(object):
         beta = compute_beta(self.L, self.b, theta)
         if theta_dot > 0:
             # NOTE F_est must be positive
+            # assert F_est > 0, 'F_est is not positive'
+            if F_est > 0:
+                F_est = torch.FloatTensor([0.])
             return -F_est * (1 - torch.exp(-mu * beta))
         else:
             return F_est * (torch.exp(mu * beta) - 1)

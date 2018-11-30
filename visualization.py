@@ -14,3 +14,8 @@ def plot_theta(target, obs, est):
     plt.legend()
     plt.show()
     plt.clf()
+
+
+def plot_friction():
+    # TODO
+    pass
