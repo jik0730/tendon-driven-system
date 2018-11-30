@@ -16,5 +16,6 @@ class PIDController(object):
         err = (cur - target) / self.del_t
         err_dot = (err - self.prev_err) / self.del_t
         self.cum_err += err * self.del_t
+        self.prev_err = err
         torque = -(self.p * err + self.d * err_dot + self.i * self.cum_err)
         return torque
