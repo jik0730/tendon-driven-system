@@ -1,5 +1,26 @@
 import torch
 import math
+import os
+import pickle as pkl
+from scipy.io import savemat
+
+const = {
+    'L': torch.FloatTensor([0.1]),
+    'b': torch.FloatTensor([0.07]),
+    'M': torch.FloatTensor([0.1]),
+    'g': torch.FloatTensor([9.81]),
+    'k': torch.FloatTensor([100.]),
+    'c': torch.FloatTensor([0.07]),
+    'I': None,
+    'T_d': None,
+    'del_t': None,
+    'a0': torch.FloatTensor([0.25]),
+    'a1': torch.FloatTensor([0.09]),
+    'a2': torch.FloatTensor([0.00005]),
+    'v0': torch.FloatTensor([20.]),
+    'A': torch.FloatTensor([0.5])
+}
+const['I'] = (0.25) * const['M'] * const['L']**2
 
 
 def compute_alpha(L, b, theta):
@@ -12,7 +33,11 @@ def compute_alpha(L, b, theta):
     out = torch.cos(theta) * L
     out = out / torch.sqrt(L**2 + b**2 + 2 * b * L * torch.sin(theta))
     out = torch.asin(out)
-    return out
+
+    if -L * torch.sin(theta) > b:
+        return torch.FloatTensor([math.pi]) - out
+    else:
+        return out
 
 
 def compute_beta(L, b, theta):
@@ -25,7 +50,11 @@ def compute_beta(L, b, theta):
     out = torch.cos(theta) * L
     out = out / torch.sqrt(L**2 + b**2 - 2 * b * L * torch.sin(theta))
     out = torch.asin(out)
-    return out
+
+    if L * torch.sin(theta) > b:
+        return torch.FloatTensor([math.pi]) - out
+    else:
+        return out
 
 
 def compute_input_force(const, theta_1, f1_1, f2_1=torch.zeros(1)):
@@ -59,30 +88,32 @@ def compute_input_force(const, theta_1, f1_1, f2_1=torch.zeros(1)):
     out = out / (L * torch.cos(theta_1 - beta))
     out = out - f1_1
 
-    return out
+    if out < 0:
+        return torch.zeros(1)
+    else:
+        return out
 
 
 def compute_theta_hat(const,
                       theta_1,
                       theta_2,
                       theta_3,
-                      F_2,
-                      f1_2,
-                      f2_2=torch.zeros(1)):
+                      F_1,
+                      f1_1,
+                      f2_1=torch.zeros(1)):
     """
     Compute theta_hat at time t under the system given theta_t-1 and 
     theta_dot_t-2 and theta_dotdot_t-2.
     theta_1 = theta_t-1
     theta_2 = theta_t-2
-    theta_dot_2 = theta_dot_t-2
-    f1_2 = f1_t-2
-    f2_2 = f2_t-2
-    F_2 = F_t-2
+    theta_3 = theta_t-3
+    f1_1 = f1_t-1
+    f2_1 = f2_t-1
+    F_1 = F_t-1
     Args:
         L, b, M, g, k, c, I: torch constant
         theta_1, 2: torch constant representing current angle at proper time step
-        theta_dot_2: angle velocity
-        f1_2, f2_2, F: frictions and input force
+        f1, f2, F: frictions and input force
         del_t: sampling time
     """
     L = const['L']
@@ -93,18 +124,18 @@ def compute_theta_hat(const,
     c = const['c']
     I = const['I']
     del_t = const['del_t']
-    theta_dot_2 = (theta_2 - theta_3) / del_t
 
     alpha = compute_alpha(L, b, theta_2)
     beta = compute_beta(L, b, theta_2)
 
     out = torch.sqrt(L**2 + b**2 + 2 * b * L * torch.sin(theta_2))
-    out = k * (c + out - torch.sqrt(L**2 + b**2)) - f2_2
+    out = k * (c + out - torch.sqrt(L**2 + b**2)) - f2_1
     out = out * L * torch.cos(theta_2 + alpha)
     out = (M * g * L * torch.sin(theta_2)) / 2. - out
-    out = out + (F_2 + f1_2) * L * torch.cos(theta_2 - beta)
-    out = out / I  # theta_dotdot_t-2
+    out = out + (F_1 + f1_1) * L * torch.cos(theta_2 - beta)
+    out = out / I  # theta_dotdot_t
 
+    theta_dot_2 = (theta_2 - theta_3) / del_t  # t-2
     out = theta_dot_2 + out * del_t  # theta_dot_t-1
     out = theta_1 + out * del_t
 
@@ -129,3 +160,32 @@ def current_target(target, t_cur, T):
             idx = t_cur // quotient
     else:
         return target
+
+
+def store_logs(time_stamp, target_history, obs_history, est_history,
+               f1_obs_history, f1_est_history, F_est_history, model_dir):
+    with open(os.path.join(model_dir, 'time_stamp.pkl'), 'wb') as f:
+        pkl.dump(time_stamp, f)
+    with open(os.path.join(model_dir, 'target_history.pkl'), 'wb') as f:
+        pkl.dump(target_history, f)
+    with open(os.path.join(model_dir, 'obs_history.pkl'), 'wb') as f:
+        pkl.dump(obs_history, f)
+    with open(os.path.join(model_dir, 'est_history.pkl'), 'wb') as f:
+        pkl.dump(est_history, f)
+    with open(os.path.join(model_dir, 'f1_obs_history.pkl'), 'wb') as f:
+        pkl.dump(f1_obs_history, f)
+    with open(os.path.join(model_dir, 'f1_est_history.pkl'), 'wb') as f:
+        pkl.dump(f1_est_history, f)
+    with open(os.path.join(model_dir, 'F_est_history.pkl'), 'wb') as f:
+        pkl.dump(F_est_history, f)
+
+    mdict = {
+        'time_stamp': time_stamp,
+        'target_history': target_history,
+        'obs_history': obs_history,
+        'est_history': est_history,
+        'f1_obs_history': f1_obs_history,
+        'f1_est_history': f1_est_history,
+        'F_est_history': F_est_history
+    }
+    savemat(os.path.join(model_dir, 'logs.mat'), mdict=mdict)

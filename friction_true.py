@@ -1,9 +1,9 @@
 """
-TODO
 Implement true friction function HERE.
 """
 import torch
 from utils import compute_beta
+from utils import compute_alpha
 
 
 class ArbitraryFriction(object):
@@ -36,7 +36,7 @@ class RealFriction(object):
     The friction function is similar to the real situation.
     """
 
-    def __init__(self, const):
+    def __init__(self, const, is_f1=True):
         self.a0 = const['a0']
         self.a1 = const['a1']
         self.a2 = const['a2']
@@ -44,24 +44,41 @@ class RealFriction(object):
         self.A = const['A']
         self.L = const['L']
         self.b = const['b']
+        self.k = const['k']
+        self.c = const['c']
         self.del_t = const['del_t']
+        self.is_f1 = is_f1
 
     def __call__(self, theta, theta_prev, F_est):
         theta_dot = (theta - theta_prev) / self.del_t
-        v = self.L**2 + self.b**2 - 2 * self.b * self.L * torch.sin(theta)
-        v = 1 / torch.sqrt(v)
-        v = 0.5 * v * (-2 * self.b * self.L * torch.cos(theta)) * theta_dot
+        if self.is_f1:
+            v = self.L**2 + self.b**2 - 2 * self.b * self.L * torch.sin(theta)
+        else:
+            v = self.L**2 + self.b**2 + 2 * self.b * self.L * torch.sin(theta)
+        v = 1. / torch.sqrt(v)
+        v = 0.5 * v * (-2. * self.b * self.L * torch.cos(theta)) * theta_dot
 
         mu = self.a0 + self.a1 * torch.exp(-(v / self.v0)**2)
         mu = mu * torch.sign(v) + self.a2 * v
         mu = self.A * mu
 
-        beta = compute_beta(self.L, self.b, theta)
-        if theta_dot > 0:
-            # NOTE F_est must be positive
-            # assert F_est > 0, 'F_est is not positive'
-            if F_est > 0:
-                F_est = torch.FloatTensor([0.])
-            return -F_est * (1 - torch.exp(-mu * beta))
+        # NOTE F_est must be positive
+        assert F_est >= 0, 'F_est is not positive {}'.format(F_est)
+
+        if self.is_f1:
+            beta = compute_beta(self.L, self.b, theta)
+            if theta_dot >= 0:
+                return -F_est * (1 - torch.exp(-mu * beta))
+            else:
+                return F_est * (torch.exp(mu * beta) - 1)
         else:
-            return F_est * (torch.exp(mu * beta) - 1)
+            # If f2
+            alpha = compute_alpha(self.L, self.b, theta)
+            spring_F = torch.sqrt(self.L**2 + self.b**2 +
+                                  2. * self.b * self.L * torch.sin(theta))
+            spring_F = self.c + spring_F - torch.sqrt(self.L**2 + self.b**2)
+            spring_F = self.k * spring_F
+            if theta_dot >= 0:
+                return -spring_F * (torch.exp(mu * alpha) - 1)
+            else:
+                return spring_F * (1 - torch.exp(-mu * alpha))
