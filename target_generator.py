@@ -22,11 +22,13 @@ def sin_target_traj(sys_freq, simT, sine_type=None):
     split = sine_type.split('_')
     desired_freq = float(split[1][:-2])
     max_degree = float(split[2][:-3])
+    offset = float(split[3][:-6]) / 180 * math.pi  # radian
 
     T = sys_freq * simT
-    amp = max_degree / 57.3  # 1 radian = 57.3 degree
+    amp = max_degree / 180 * math.pi  # 1 radian = 57.3 degree
     target_sin_traj = amp * torch.sin(
-        torch.linspace(0, simT, steps=T) * desired_freq * 2. * math.pi)
+        torch.linspace(0, simT, steps=T) * desired_freq * 2. *
+        math.pi) + offset
     return target_sin_traj
 
 
@@ -36,6 +38,15 @@ def sin_target_traj_manual(sys_freq, simT, desired_freq, max_degree):
     target_sin_traj = amp * torch.sin(
         torch.linspace(0, simT, steps=T) * desired_freq * 2. * math.pi)
     return target_sin_traj
+
+
+def sin_freq_variation(freq_from, freq_to, sys_freq, simT):
+    t = 0.
+    freq = freq_from
+    target_traj = []
+    while t < simT:
+
+        t += 1. / sys_freq
 
 
 def random_walk(max_degree, T, SEED=1):

@@ -88,9 +88,10 @@ def visualize_simulation(time_stamp, target, theta):
 
 
 if __name__ == '__main__':
-    time_stamp_file = sys.argv[1]
-    target_file = sys.argv[2]
-    theta_file = sys.argv[3]
+    model_dir = sys.argv[1]
+    time_stamp_file = os.path.join(model_dir, 'time_stamp.pkl')
+    target_file = os.path.join(model_dir, 'target_history.pkl')
+    theta_file = os.path.join(model_dir, 'obs_history.pkl')
     with open(time_stamp_file, 'rb') as f:
         time_stamp = pkl.load(f)
     with open(target_file, 'rb') as f:

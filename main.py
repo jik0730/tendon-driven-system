@@ -35,7 +35,7 @@ parser.add_argument('--Kd', default=0.02, type=float)  # Kd = 0.02 * Kp
 parser.add_argument('--Ki', default=0., type=float)  # Ki = 0. * Kp
 parser.add_argument('--ftype', default=0, type=int)
 parser.add_argument('--model_dir', default='exp/basic_tests')
-parser.add_argument('--data_type', default='sine_1Hz_10deg')
+parser.add_argument('--data_type', default='sine_1Hz_10deg_0offset')
 args = parser.parse_args()
 
 
@@ -50,16 +50,6 @@ def main():
     const['del_t'] = float(1 / args.freq)  # sampling time for dynamics
     T = args.freq * args.simT  # number of operation for dynamics
 
-    # initiate values
-    t_OBS_vals = [
-        torch.zeros(1),
-        torch.zeros(1),
-        torch.zeros(1),
-        torch.zeros(1)
-    ]
-    f1_EST_vals = [torch.zeros(1)]
-    F_EST = torch.zeros(1)
-
     # Target trajectory
     if 'sine' in args.data_type or 'basic_tests' in args.model_dir:
         target_traj = sin_target_traj(
@@ -68,6 +58,16 @@ def main():
         target_traj = random_walk(30., T)
     else:
         raise Exception('I dont know your targets')
+
+    # initiate values
+    t_OBS_vals = [
+        torch.FloatTensor([target_traj[0]]),
+        torch.FloatTensor([target_traj[1]]),
+        torch.FloatTensor([target_traj[2]]),
+        torch.FloatTensor([target_traj[3]])
+    ]
+    f1_EST_vals = [torch.zeros(1)]
+    F_EST = torch.zeros(1)
 
     # NOTE 0 if f_est=0, 1 if f_est is oracle, 2 if f_est is MLP
     friction_type = args.ftype
@@ -152,8 +152,8 @@ def main():
         F_est_history.append(float(F_EST.detach().numpy()))
 
         # for debugging
-        # if float(t_OBS.numpy()) > 3:
-        #     break
+        if not t_OBS.numpy():
+            break
 
     # store hyper-parameters and settings and trained model
     params_dir = os.path.join(args.model_dir, args.data_type)
