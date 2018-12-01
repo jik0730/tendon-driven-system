@@ -7,6 +7,7 @@ import argparse
 import json
 import torch
 import torch.nn as nn
+import numpy as np
 from utils import compute_input_force
 from utils import compute_theta_hat
 from utils import degree_to_radian
@@ -45,6 +46,7 @@ def main():
     # 2. Compute theta_hat by f_EST (2)
     # 3. Compute loss between (1) and (2)
     # 4. Optimize parameters of f_EST
+    print('start exp: {} and {}'.format(args.model_dir, args.data_type))
 
     # Simulation parameters and intial values
     const['del_t'] = float(1 / args.freq)  # sampling time for dynamics
@@ -127,7 +129,7 @@ def main():
                                   t_OBS_vals[-3], F_EST, f1_EST)
 
         # Optimization
-        print(t, t_OBS, f1_OBS, F_EST, t_dot_OBS, target)
+        # print(t, t_OBS, f1_OBS, F_EST, t_dot_OBS, target)
         if friction_type == 2:
             loss = loss_fn(t_EST, t_OBS)
             optimizer.zero_grad()
@@ -152,7 +154,7 @@ def main():
         F_est_history.append(float(F_EST.detach().numpy()))
 
         # for debugging
-        if not t_OBS.numpy():
+        if np.isnan(t_OBS.numpy()):
             break
 
     # store hyper-parameters and settings and trained model

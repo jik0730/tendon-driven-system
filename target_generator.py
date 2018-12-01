@@ -40,13 +40,32 @@ def sin_target_traj_manual(sys_freq, simT, desired_freq, max_degree):
     return target_sin_traj
 
 
-def sin_freq_variation(freq_from, freq_to, sys_freq, simT):
+def sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type=None):
+    split = sine_type.split('_')
+    max_degree = float(split[2][:-3])
+    amp = max_degree / 180 * math.pi
+    T = int(sys_freq * simT)
+
     t = 0.
     freq = freq_from
+    linspace = torch.linspace(0, simT, steps=T)
+    idx_from = 0
     target_traj = []
     while t < simT:
-
-        t += 1. / sys_freq
+        idx_to = min(int(1. / freq * sys_freq) + idx_from, T)
+        print('1/freq: {}, t: {}, del_idx: {}'.format(1. / freq, t,
+                                                      idx_to - idx_from))
+        sin_traj = amp * torch.sin(
+            linspace[0:idx_to - idx_from] * freq * 2. * math.pi)
+        target_traj.append(sin_traj)
+        idx_from = idx_to
+        t += 1. / freq
+        freq = freq * 20**(1 / 19.)
+    target_traj = torch.cat(target_traj)
+    # print(target_traj.size())
+    # plt.plot(target_traj.numpy())
+    # plt.show()
+    return target_traj
 
 
 def random_walk(max_degree, T, SEED=1):
@@ -70,6 +89,9 @@ def random_walk(max_degree, T, SEED=1):
 
 
 if __name__ == '__main__':
-    max_degree = 30  # positive
-    T = 100000
-    random_walk(max_degree, T)
+    freq_from = 0.5
+    freq_to = 10.
+    sys_freq = 10000
+    simT = 13.15
+    sine_type = 'sine_1Hz_10deg_0offset'
+    sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type)
