@@ -4,6 +4,7 @@ Main function implements actual simulation stuffs.
 import math
 import os
 import argparse
+import json
 import torch
 import torch.nn as nn
 from utils import compute_input_force
@@ -12,6 +13,7 @@ from utils import degree_to_radian
 from utils import current_target
 from utils import const  # system constants
 from utils import store_logs
+from utils import cast_dict_to_float
 from pid_controller import PIDController
 from friction_est import Friction_EST
 from friction_true import ArbitraryFriction
@@ -19,6 +21,8 @@ from friction_true import SinFriction
 from friction_true import RealFriction
 from visualization import plot_theta
 from target_generator import sin_target_traj
+from target_generator import random_walk
+from collections import OrderedDict
 
 # Define hyper-parameters and simulation parameters
 parser = argparse.ArgumentParser()
@@ -30,7 +34,8 @@ parser.add_argument('--Kp', default=0.0018, type=float)
 parser.add_argument('--Kd', default=0.02, type=float)  # Kd = 0.02 * Kp
 parser.add_argument('--Ki', default=0., type=float)  # Ki = 0. * Kp
 parser.add_argument('--ftype', default=0, type=int)
-parser.add_argument('--model_dir', default='exp/sin')
+parser.add_argument('--model_dir', default='exp/basic_tests')
+parser.add_argument('--data_type', default='sine_1Hz_10deg')
 args = parser.parse_args()
 
 
@@ -55,8 +60,14 @@ def main():
     f1_EST_vals = [torch.zeros(1)]
     F_EST = torch.zeros(1)
 
-    # Target trajectory -> can be out of main
-    target_sin_traj = sin_target_traj(10., T)
+    # Target trajectory
+    if 'sine' in args.data_type or 'basic_tests' in args.model_dir:
+        target_traj = sin_target_traj(
+            args.freq, args.simT, sine_type=args.data_type)
+    elif 'random_walk' in args.model_dir:
+        target_traj = random_walk(30., T)
+    else:
+        raise Exception('I dont know your targets')
 
     # NOTE 0 if f_est=0, 1 if f_est is oracle, 2 if f_est is MLP
     friction_type = args.ftype
@@ -86,7 +97,7 @@ def main():
 
     for t in range(4, T):
         # current target
-        target = target_sin_traj[t]
+        target = target_traj[t]
 
         # detach nodes for simplicity
         f1 = f1_EST_vals[-1].detach()
@@ -141,24 +152,38 @@ def main():
         F_est_history.append(float(F_EST.detach().numpy()))
 
         # for debugging
-        if float(t_OBS.numpy()) > 3:
-            break
+        # if float(t_OBS.numpy()) > 3:
+        #     break
+
+    # store hyper-parameters and settings and trained model
+    params_dir = os.path.join(args.model_dir, args.data_type)
+    if not os.path.exists(params_dir):
+        os.makedirs(params_dir)
+    params = OrderedDict(vars(args))
+    const_ord = OrderedDict(cast_dict_to_float(const))
+    with open(os.path.join(params_dir, 'params.json'), 'w') as f:
+        json.dump(params, f)
+    with open(os.path.join(params_dir, 'const.json'), 'w') as f:
+        json.dump(const_ord, f)
+    model_name = os.path.join(params_dir, 'f1_model')
+    torch.save(f1_EST_fn.state_dict(), model_name)
 
     # store values for post-visualization
     if friction_type == 0:
-        model_dir = os.path.join(args.model_dir, 'f_est=0')
+        training_log_dir = os.path.join(params_dir, 'f_est=0', 'training')
     elif friction_type == 1:
-        model_dir = os.path.join(args.model_dir, 'oracle')
+        training_log_dir = os.path.join(params_dir, 'oracle', 'training')
     elif friction_type == 2:
-        model_dir = os.path.join(args.model_dir, 'MLP')
-    if not os.path.exists(model_dir):
-        os.makedirs(model_dir)
+        training_log_dir = os.path.join(params_dir, 'MLP', 'training')
+    if not os.path.exists(training_log_dir):
+        os.makedirs(training_log_dir)
 
     store_logs(time_stamp, target_history, obs_history, est_history,
-               f1_obs_history, f1_est_history, F_est_history, model_dir)
+               f1_obs_history, f1_est_history, F_est_history, training_log_dir)
 
     # visualize
-    plot_theta(target_history, obs_history, est_history, model_dir)
+    plot_theta(time_stamp, target_history, obs_history, est_history,
+               training_log_dir)
 
 
 if __name__ == '__main__':

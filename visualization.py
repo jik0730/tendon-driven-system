@@ -11,9 +11,9 @@ from matplotlib import animation
 # 3. statistic visualization
 
 
-def plot_theta(target, obs, est, model_dir):
-    plt.plot(range(len(target)), target, label='target')
-    plt.plot(range(len(obs)), obs, label='obs')
+def plot_theta(time_stamp, target, obs, est, model_dir):
+    plt.plot(time_stamp, target, label='target')
+    plt.plot(time_stamp, obs, label='obs')
     #plt.plot(range(len(est)), est, label='est')
 
     plt.legend()
@@ -23,7 +23,7 @@ def plot_theta(target, obs, est, model_dir):
 
 
 def plot_friction():
-    # TODO
+    # TODO by sihwan
     pass
 
 

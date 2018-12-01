@@ -14,10 +14,10 @@ const = {
     'I': None,
     'T_d': None,
     'del_t': None,
-    'a0': torch.FloatTensor([0.25]),
-    'a1': torch.FloatTensor([0.09]),
-    'a2': torch.FloatTensor([0.00005]),
-    'v0': torch.FloatTensor([20.]),
+    'a0': torch.FloatTensor([0.22]),
+    'a1': torch.FloatTensor([0.13]),
+    'a2': torch.FloatTensor([0.12]),
+    'v0': torch.FloatTensor([0.04]),
     'A': torch.FloatTensor([0.5])
 }
 const['I'] = (0.25) * const['M'] * const['L']**2
@@ -189,3 +189,10 @@ def store_logs(time_stamp, target_history, obs_history, est_history,
         'F_est_history': F_est_history
     }
     savemat(os.path.join(model_dir, 'logs.mat'), mdict=mdict)
+
+
+def cast_dict_to_float(dictionary):
+    for key, val in dictionary.items():
+        if type(val) == torch.Tensor:
+            dictionary[key] = float(val.detach().numpy())
+    return dictionary
