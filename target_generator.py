@@ -70,7 +70,7 @@ def sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type=None):
 
 def random_walk(T, data_type):
     split = data_type.split('_')
-    max_degree = float(split[2][:-3]) / 180. * math.pi
+    max_degree = float(split[2][:-3])
     SEED = int(split[2][:-4])
 
     seed(SEED)
