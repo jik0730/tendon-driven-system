@@ -32,6 +32,8 @@ def compute_alpha(L, b, theta):
     """
     out = torch.cos(theta) * L
     out = out / torch.sqrt(L**2 + b**2 + 2 * b * L * torch.sin(theta))
+    if out > 1:
+        out = torch.ones(1)
     out = torch.asin(out)
 
     if -L * torch.sin(theta) > b:

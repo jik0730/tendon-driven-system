@@ -154,8 +154,8 @@ def main():
         F_est_history.append(float(F_EST.detach().numpy()))
 
         # for debugging
-        if np.isnan(t_OBS.numpy()):
-            break
+        # if np.isnan(t_OBS.numpy()):
+        #     break
 
     # store hyper-parameters and settings and trained model
     params_dir = os.path.join(args.model_dir, args.data_type)
