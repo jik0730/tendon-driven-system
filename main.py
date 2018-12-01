@@ -57,7 +57,7 @@ def main():
         target_traj = sin_target_traj(
             args.freq, args.simT, sine_type=args.data_type)
     elif 'random_walk' in args.model_dir:
-        target_traj = random_walk(30., T)
+        target_traj = random_walk(T, args.data_type)
     else:
         raise Exception('I dont know your targets')
 

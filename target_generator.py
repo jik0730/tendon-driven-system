@@ -68,7 +68,11 @@ def sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type=None):
     return target_traj
 
 
-def random_walk(max_degree, T, SEED=1):
+def random_walk(T, data_type):
+    split = sine_type.split('_')
+    max_degree = float(split[2][:-3]) / 180. * math.pi
+    SEED = int(split[2][:-4])
+
     seed(SEED)
     random_walk = list()
     delta_movement = random() * 0.2  # movement is in (0, 0.2)
