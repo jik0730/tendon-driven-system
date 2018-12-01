@@ -52,7 +52,7 @@ def compute_beta(L, b, theta):
     if out > 1:
         out = torch.ones(1)
     out = torch.asin(out)
-    print(out)
+    # print(out)
 
     if L * torch.sin(theta) > b:
         return torch.FloatTensor([math.pi]) - out
