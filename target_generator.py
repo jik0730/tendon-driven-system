@@ -71,7 +71,7 @@ def sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type=None):
 def random_walk(T, data_type):
     split = data_type.split('_')
     max_degree = float(split[2][:-3])
-    SEED = int(split[2][:-4])
+    SEED = int(split[3][:-4])
 
     seed(SEED)
     random_walk = list()
@@ -87,8 +87,8 @@ def random_walk(T, data_type):
         else:
             value = random_walk[i - 1] + movement
         random_walk.append(torch.FloatTensor([value]))
-    # plt.plot(random_walk)
-    # plt.show()
+    plt.plot(random_walk)
+    plt.show()
     return degree_to_radian(random_walk)
 
 
@@ -101,9 +101,10 @@ def step_target_traj(T, data_type):
 
 
 if __name__ == '__main__':
-    freq_from = 0.5
-    freq_to = 10.
-    sys_freq = 10000
-    simT = 13.15
-    sine_type = 'sine_1Hz_10deg_0offset'
-    sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type)
+    # freq_from = 0.5
+    # freq_to = 10.
+    # sys_freq = 10000
+    # simT = 13.15
+    # sine_type = 'sine_1Hz_10deg_0offset'
+    # sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type)
+    random_walk(100000, 'random_walk_30deg_1seed')

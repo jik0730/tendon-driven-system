@@ -25,7 +25,7 @@ python main.py --ftype 2 --simT 10 --model_dir exp/amp_dependency --data_type si
 wait
 
 # random_walk
-python main.py --ftype 0 --simT 10 --model_dir exp/random_walk --data_type random_walk_30deg_1seed &
-python main.py --ftype 1 --simT 10 --model_dir exp/random_walk --data_type random_walk_30deg_1seed &
-python main.py --ftype 2 --simT 10 --model_dir exp/random_walk --data_type random_walk_30deg_1seed &
+python main.py --ftype 0 --simT 10 --model_dir exp/random_walk --data_type random_walk_30deg_3seed &
+python main.py --ftype 1 --simT 10 --model_dir exp/random_walk --data_type random_walk_30deg_3seed &
+python main.py --ftype 2 --simT 10 --model_dir exp/random_walk --data_type random_walk_30deg_3seed &
 wait
