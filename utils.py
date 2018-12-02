@@ -201,3 +201,9 @@ def cast_dict_to_float(dictionary):
         if type(val) == torch.Tensor:
             dictionary[key] = float(val.detach().numpy())
     return dictionary
+
+
+def cast_dict_to_tensor(dictionary):
+    for key, val in dictionary.items():
+        dictionary[key] = torch.FloatTensor([val])
+    return dictionary
