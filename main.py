@@ -157,7 +157,7 @@ def main():
         # if np.isnan(t_OBS.numpy()):
         #     break
 
-    # store hyper-parameters and settings and trained model
+    # store hyper-parameters and settings
     params_dir = os.path.join(args.model_dir, args.data_type)
     if not os.path.exists(params_dir):
         os.makedirs(params_dir)
@@ -167,8 +167,6 @@ def main():
         json.dump(params, f)
     with open(os.path.join(params_dir, 'const.json'), 'w') as f:
         json.dump(const_ord, f)
-    model_name = os.path.join(params_dir, 'f1_model')
-    torch.save(f1_EST_fn.state_dict(), model_name)
 
     # store values for post-visualization
     if friction_type == 0:
@@ -179,9 +177,13 @@ def main():
         training_log_dir = os.path.join(params_dir, 'MLP', 'training')
     if not os.path.exists(training_log_dir):
         os.makedirs(training_log_dir)
-
     store_logs(time_stamp, target_history, obs_history, est_history,
                f1_obs_history, f1_est_history, F_est_history, training_log_dir)
+
+    # save trained model
+    if friction_type == 2:
+        model_name = os.path.join(params_dir, 'MLP', 'f1_model')
+        torch.save(f1_EST_fn.state_dict(), model_name)
 
     # visualize
     plot_theta(time_stamp, target_history, obs_history, est_history,
