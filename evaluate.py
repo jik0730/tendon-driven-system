@@ -35,7 +35,7 @@ def evaluate(const, params, ftype):
     T = params['freq'] * params['simT']
 
     # Target trajectory for evaluation
-    if 'sine' in args.eval_type:
+    if 'sine' in args.eval_type and 'Hz' in args.eval_type:
         target_traj = sin_target_traj(
             params['freq'], params['simT'], sine_type=args.eval_type)
     elif 'random_walk' in args.eval_type:
