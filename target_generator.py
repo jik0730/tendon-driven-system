@@ -92,6 +92,14 @@ def random_walk(T, data_type):
     return degree_to_radian(random_walk)
 
 
+def step_target_traj(T, data_type):
+    split = data_type.split('_')  # step_10deg
+    degree = float(split[1][:-3])
+    target_traj = torch.ones(T) * degree
+    target_traj = degree_to_radian(target_traj)
+    return target_traj
+
+
 if __name__ == '__main__':
     freq_from = 0.5
     freq_to = 10.

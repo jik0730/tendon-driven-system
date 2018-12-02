@@ -15,6 +15,7 @@ from visualization import plot_theta
 from target_generator import sin_target_traj
 from target_generator import random_walk
 from target_generator import sin_freq_variation
+from target_generator import step_target_traj
 
 # Define hyper-parameters and simulation parameters
 parser = argparse.ArgumentParser()
@@ -47,16 +48,26 @@ def evaluate(const, params, ftype):
         sine_type = 'sine_1Hz_10deg_0offset'
         target_traj = sin_freq_variation(freq_from, freq_to, sys_freq, simT,
                                          sine_type)
+    elif 'step' in args.eval_type:
+        target_traj = step_target_traj(T, args.eval_type)
     else:
         raise Exception('I dont know your targets')
 
     # initiate values
-    t_OBS_vals = [
-        torch.FloatTensor([target_traj[0]]),
-        torch.FloatTensor([target_traj[1]]),
-        torch.FloatTensor([target_traj[2]]),
-        torch.FloatTensor([target_traj[3]])
-    ]
+    if 'step' in args.eval_type:
+        t_OBS_vals = [
+            torch.FloatTensor([0]),
+            torch.FloatTensor([0]),
+            torch.FloatTensor([0]),
+            torch.FloatTensor([0])
+        ]
+    else:
+        t_OBS_vals = [
+            torch.FloatTensor([target_traj[0]]),
+            torch.FloatTensor([target_traj[1]]),
+            torch.FloatTensor([target_traj[2]]),
+            torch.FloatTensor([target_traj[3]])
+        ]
     f1_EST_vals = [torch.zeros(1)]
     F_EST = torch.zeros(1)
 
