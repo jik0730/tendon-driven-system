@@ -68,6 +68,42 @@ def sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type=None):
     return target_traj
 
 
+def sin_freq_variation_with_step(freq_from,
+                                 freq_to,
+                                 sys_freq,
+                                 simT,
+                                 sine_type=None):
+    split = sine_type.split('_')
+    max_degree = float(split[2][:-3])
+    amp = max_degree / 180 * math.pi
+    T = int(sys_freq * simT)
+
+    t = 0.
+    freq = freq_from
+    linspace = torch.linspace(0, simT, steps=T)
+    idx_from = 0
+    target_traj = []
+    while t < simT:
+        idx_to = min(int(1. / freq * sys_freq) + idx_from, T)
+        print('1/freq: {}, t: {}, del_idx: {}'.format(1. / freq, t,
+                                                      idx_to - idx_from))
+        sin_traj = amp * torch.sin(
+            linspace[0:idx_to - idx_from] * freq * 2. * math.pi)
+        target_traj.append(sin_traj)
+        # add step
+        step_traj = step_target_traj(2 * sys_freq, 'step_0deg')
+        target_traj.append(step_traj)
+        t += 2.
+        idx_from = idx_to
+        t += 1. / freq
+        freq = freq * 20**(1 / 19.)
+    target_traj = torch.cat(target_traj)
+    # print(target_traj.size())
+    # plt.plot(target_traj.numpy())
+    # plt.show()
+    return target_traj
+
+
 def random_walk(T, data_type):
     split = data_type.split('_')
     max_degree = float(split[2][:-3])
@@ -101,10 +137,10 @@ def step_target_traj(T, data_type):
 
 
 if __name__ == '__main__':
-    # freq_from = 0.5
-    # freq_to = 10.
-    # sys_freq = 10000
-    # simT = 13.15
-    # sine_type = 'sine_1Hz_10deg_0offset'
-    # sin_freq_variation(freq_from, freq_to, sys_freq, simT, sine_type)
-    random_walk(100000, 'random_walk_30deg_1seed')
+    freq_from = 0.5
+    freq_to = 10.
+    sys_freq = 10000
+    simT = 30
+    sine_type = 'sine_1Hz_10deg_0offset'
+    sin_freq_variation_with_step(freq_from, freq_to, sys_freq, simT, sine_type)
+    # random_walk(100000, 'random_walk_30deg_1seed')

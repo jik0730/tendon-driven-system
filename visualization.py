@@ -82,9 +82,10 @@ def visualize_simulation(time_stamp, target, theta):
         frames=int(len(time_stamp) / scale),
         interval=1,
         blit=True,
-        repeat=True)
+        repeat=False)
     plt.legend()
-    plt.show()
+    # plt.show()
+    return anim
 
 
 if __name__ == '__main__':
@@ -98,4 +99,7 @@ if __name__ == '__main__':
         target = pkl.load(f)
     with open(theta_file, 'rb') as f:
         theta = pkl.load(f)
-    visualize_simulation(time_stamp, target, theta)
+
+    gif = visualize_simulation(time_stamp, target, theta)
+    gif_file = os.path.join(sys.argv[1], 'visualization.gif')
+    gif.save(gif_file, fps=60, dpi=50, writer='imagemagick')

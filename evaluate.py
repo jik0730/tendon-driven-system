@@ -40,7 +40,15 @@ def evaluate(const, params, ftype):
             params['freq'], params['simT'], sine_type=args.eval_type)
     elif 'random_walk' in args.eval_type:
         target_traj = random_walk(T, args.eval_type)
-    elif 'sine_freq_variation' in args.eval_type:
+    elif 'sine_freq_variation' == args.eval_type:
+        freq_from = 0.5
+        freq_to = 10.
+        sys_freq = params['freq']
+        simT = params['simT']
+        sine_type = 'sine_1Hz_10deg_0offset'
+        target_traj = sin_freq_variation(freq_from, freq_to, sys_freq, simT,
+                                         sine_type)
+    elif 'sine_freq_variation_with_step' == args.eval_step:
         freq_from = 0.5
         freq_to = 10.
         sys_freq = params['freq']

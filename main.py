@@ -60,7 +60,15 @@ def main():
             args.freq, args.simT, sine_type=args.data_type)
     elif 'random_walk' in args.data_type:
         target_traj = random_walk(T, args.data_type)
-    elif 'sine_freq_variation' in args.data_type:
+    elif 'sine_freq_variation' == args.data_type:
+        freq_from = 0.5
+        freq_to = 10.
+        sys_freq = args.freq
+        simT = args.simT
+        sine_type = 'sine_1Hz_10deg_0offset'
+        target_traj = sin_freq_variation(freq_from, freq_to, sys_freq, simT,
+                                         sine_type)
+    elif 'sine_freq_variation_with_step' == args.data_type:
         freq_from = 0.5
         freq_to = 10.
         sys_freq = args.freq
