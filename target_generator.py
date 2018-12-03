@@ -87,8 +87,8 @@ def random_walk(T, data_type):
         else:
             value = random_walk[i - 1] + movement
         random_walk.append(torch.FloatTensor([value]))
-    plt.plot(random_walk)
-    plt.show()
+    # plt.plot(random_walk)
+    # plt.show()
     return degree_to_radian(random_walk)
 
 
