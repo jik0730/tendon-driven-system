@@ -23,6 +23,8 @@ from friction_true import RealFriction
 from visualization import plot_theta
 from target_generator import sin_target_traj
 from target_generator import random_walk
+from target_generator import sin_freq_variation
+from target_generator import step_target_traj
 from collections import OrderedDict
 
 # Define hyper-parameters and simulation parameters
@@ -53,11 +55,21 @@ def main():
     T = args.freq * args.simT  # number of operation for dynamics
 
     # Target trajectory
-    if 'sine' in args.data_type or 'basic_tests' in args.model_dir:
+    if 'sine' in args.data_type and 'Hz' in args.data_type:
         target_traj = sin_target_traj(
             args.freq, args.simT, sine_type=args.data_type)
     elif 'random_walk' in args.model_dir:
         target_traj = random_walk(T, args.data_type)
+    elif 'sine_freq_variation' in args.data_type:
+        freq_from = 0.5
+        freq_to = 10.
+        sys_freq = args.freq
+        simT = args.simT
+        sine_type = 'sine_1Hz_10deg_0offset'
+        target_traj = sin_freq_variation(freq_from, freq_to, sys_freq, simT,
+                                         sine_type)
+    elif 'step' in args.data_type:
+        target_traj = step_target_traj(T, args.data_type)
     else:
         raise Exception('I dont know your targets')
 
