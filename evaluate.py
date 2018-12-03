@@ -16,6 +16,7 @@ from target_generator import sin_target_traj
 from target_generator import random_walk
 from target_generator import sin_freq_variation
 from target_generator import step_target_traj
+from target_generator import sin_freq_variation_with_step
 
 # Define hyper-parameters and simulation parameters
 parser = argparse.ArgumentParser()
