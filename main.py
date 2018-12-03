@@ -58,7 +58,7 @@ def main():
     if 'sine' in args.data_type and 'Hz' in args.data_type:
         target_traj = sin_target_traj(
             args.freq, args.simT, sine_type=args.data_type)
-    elif 'random_walk' in args.model_dir:
+    elif 'random_walk' in args.data_type:
         target_traj = random_walk(T, args.data_type)
     elif 'sine_freq_variation' in args.data_type:
         freq_from = 0.5
