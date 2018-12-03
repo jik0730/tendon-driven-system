@@ -54,8 +54,8 @@ def evaluate(const, params, ftype):
         sys_freq = params['freq']
         simT = params['simT']
         sine_type = 'sine_1Hz_10deg_0offset'
-        target_traj = sin_freq_variation(freq_from, freq_to, sys_freq, simT,
-                                         sine_type)
+        target_traj = sin_freq_variation_with_step(freq_from, freq_to,
+                                                   sys_freq, simT, sine_type)
     elif 'step' in args.eval_type:
         target_traj = step_target_traj(T, args.eval_type)
     else:

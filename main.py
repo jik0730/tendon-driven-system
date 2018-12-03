@@ -74,8 +74,8 @@ def main():
         sys_freq = args.freq
         simT = args.simT
         sine_type = 'sine_1Hz_10deg_0offset'
-        target_traj = sin_freq_variation(freq_from, freq_to, sys_freq, simT,
-                                         sine_type)
+        target_traj = sin_freq_variation_with_step(freq_from, freq_to,
+                                                   sys_freq, simT, sine_type)
     elif 'step' in args.data_type:
         target_traj = step_target_traj(T, args.data_type)
     else:
